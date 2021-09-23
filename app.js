@@ -1,9 +1,12 @@
 //importation du package dotenv pour utiliser les variables d'environnement
-const dotenv = require('dotenv').config();
+const dotenv = require("dotenv").config();
 
 // importation du package express (création d'application)
 const express = require("express");
 const app = express();
+
+// importation du package express
+const helmet = require("helmet");
 
 // importation du package body-parser
 const bodyParser = require("body-parser");
@@ -14,7 +17,6 @@ const userRoutes = require("./routes/user");
 
 // accés au chemin du système de fichiers
 const path = require("path");
-
 
 // importation du package mongoose
 const mongoose = require("mongoose");
@@ -43,6 +45,8 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
   next();
 });
+
+app.use(helmet());
 
 app.use(bodyParser.json());
 
