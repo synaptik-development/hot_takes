@@ -1,20 +1,21 @@
-const dotenv = require('dotenv').config();
+const dotenv = require("dotenv").config();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const CryptoJS = require("crypto-js");
 
 //------------------------------------------------------
 // créer un nouvel utilisateur
 //------------------------------------------------------
 exports.signup = (req, res, next) => {
-  // cryptage du mot de passe
+  const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f");
+  const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+  const cryptedEmail = CryptoJS.AES.encrypt(req.body.email, key, { iv: iv }).toString();
   bcrypt
-    .hash(req.body.password, 10) // saler 10 fois
+    .hash(req.body.password, 10)
     .then((hash) => {
-      // nouvel utilisateur avec les valeurs reçues
       const user = new User({
-        email: req.body.email,
+        email: cryptedEmail,
         password: hash,
       });
       // enregistrement de l'utilisateur dans la base de données
@@ -30,8 +31,11 @@ exports.signup = (req, res, next) => {
 // se connecter
 //------------------------------------------------------
 exports.login = (req, res, next) => {
+  const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f");
+  const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+  const cryptedEmail = CryptoJS.AES.encrypt(req.body.email, key, { iv: iv }).toString();
   // recherche de l'utilisateur dans la base de données
-  User.findOne({ email: req.body.email })
+  User.findOne({ email: cryptedEmail })
     .then((user) => {
       // si l'utilisateur n'existe pas
       if (!user) {
