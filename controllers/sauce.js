@@ -45,17 +45,27 @@ exports.createSauce = (req, res, next) => {
 // modifier une sauce
 //------------------------------------------------------
 exports.modifySauce = (req, res, next) => {
-  // regarde si req.file existe ou non
-  const sauceObject = req.file
-    ? {
-        // s'il existe on traite la nouvelle image
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-      } /* sinon on traite l'objet entrant*/
-    : { ...req.body };
-  Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-    .then(() => res.status(200).json({ message: "Objet modifié !" }))
-    .catch((error) => res.status(400).json({ error }));
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    const filename = sauce.imageUrl.split("/images/")[1];
+    // regarde si req.file existe ou non
+    const sauceObject = req.file
+      ? {
+          ...fs.unlink(`images/${filename}`, (err) => {
+            if (err) {
+              console.log("ancienne image non supprimée:" + err);
+            } else {
+              console.log("l'ancienne image a bien été supprimé");
+            }
+          }),
+          // s'il existe on traite la nouvelle image
+          ...JSON.parse(req.body.sauce),
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+        } /* sinon on traite l'objet entrant*/
+      : { ...req.body };
+    Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+      .then(() => res.status(200).json({ message: "Objet modifié !" }))
+      .catch((error) => res.status(400).json({ error }));
+  });
 };
 
 //------------------------------------------------------
